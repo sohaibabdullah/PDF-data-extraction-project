@@ -7,12 +7,14 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 from googleapiclient.errors import HttpError
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
 
 # --- CONFIGURATION ---
 LINKS_FILE = "pdflinks.txt"
 DOWNLOAD_FOLDER = "pdf-voterlist"
 SCOPES = ['https://www.googleapis.com/auth/drive']
-
+'''
 def get_drive_service():
     """Authenticates and returns the Drive service."""
     creds = None
@@ -21,6 +23,39 @@ def get_drive_service():
     else:
         print("Error: 'token.json' not found. Please run the setup script first.")
         return None
+    return build('drive', 'v3', credentials=creds)
+'''
+def get_drive_service():
+    """Authenticates and returns the Drive service. Auto-creates token.json if missing."""
+    creds = None
+    # 1. Try to load existing token
+    if os.path.exists('token.json'):
+        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    
+    # 2. If no token or invalid, log in
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            try:
+                creds.refresh(Request())
+            except Exception:
+                # If refresh fails, force re-login
+                creds = None
+        
+        if not creds:
+            if not os.path.exists('credentials.json'):
+                print("❌ Error: 'credentials.json' is missing.")
+                print("Please copy 'credentials.json' to this folder and try again.")
+                return None
+                
+            print("Initiating Google Login...")
+            flow = InstalledAppFlow.from_client_secrets_file(
+                'credentials.json', SCOPES)
+            creds = flow.run_local_server(port=0)
+        
+        # 3. Save the new token for next time
+        with open('token.json', 'w') as token:
+            token.write(creds.to_json())
+            
     return build('drive', 'v3', credentials=creds)
 
 def extract_file_id(url):
