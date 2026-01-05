@@ -25,6 +25,10 @@ import numpy as np
 import io
 import matplotlib.pyplot as plt
 
+import downloader
+import drive_upload_module
+import error_upload_module
+
 load_dotenv()
 
 
@@ -1319,8 +1323,31 @@ def main():
         logging.info("-" * 60)
         
         logger = logging.getLogger()
-        run_verification(write_to_file=True, existing_logger=logger,const_name=const_folder)
+        verify_stats = run_verification(write_to_file=True, existing_logger=logger,const_name=const_folder)
         #logging.info(f"--- Finishing Constituency: {constituency_name} ---\n")
+
+        counts_ok = verify_stats["counts_match"]
+        if not critical_metadata_failures:
+            metadata_ok = True
+        else:
+            metadata_ok = False
+        
+        if verify_stats['unpaired_excel_folders'] == 0:
+            log_message = f"{verify_stats['pdf_count']}/{verify_stats['excel_count']} Excels generated - No issue found"
+        else:
+            log_message = f"{verify_stats['pdf_count']}/{verify_stats['excel_count']} Excels generated, unpaired excel folders: {verify_stats['unpaired_excel_folders']}"
+        
+        logging.info("="*60)
+        logging.info(f"--- UPLOAD DECISION FOR {constituency_name} ---")
+        logging.info(f"Criteria: Counts Match? {counts_ok} | Metadata OK? {metadata_ok}")
+        logging.info(f"Log Message: {log_message}")
+
+        if counts_ok and metadata_ok:
+            logging.info("✅ PASSED. Uploading to Main Drive...")
+            drive_upload_module.process_and_upload_folder(constituency_name, log_message)
+        else:
+            logging.warning("❌ FAILED. Uploading to Error/Review Drive...")
+            error_upload_module.process_and_upload_error_folder(constituency_name, log_message)
         
         logging.info(f"Total time taken: {(total_end_time - total_start_time) / 60:.2f} minutes")
         logging.info(f"Finished Constituency: {constituency_name}-------")
@@ -1345,3 +1372,5 @@ if __name__ == "__main__":
     
     print("\nProcessing complete. Now running final verification audit...")
     run_verification()
+
+

@@ -71,6 +71,12 @@ def run_verification(write_to_file=True,existing_logger=None,const_name=None):
     else:
         constituency_folders = [d for d in pdf_root_dir.iterdir() if d.is_dir()]
     total_discrepancies = 0
+    stats = {
+        "pdf_count": 0,
+        "excel_count": 0,
+        "unpaired_excel_folders": 0,
+        "counts_match": False
+    }
     for const_folder in constituency_folders:
         constituency_name = const_folder.name
         output_const_folder = excel_root_dir / constituency_name
@@ -135,6 +141,7 @@ def run_verification(write_to_file=True,existing_logger=None,const_name=None):
                 logger.info(f"Total upaired excels found: {unpaired_excels_count}")
             if not unpaired_excels_found:
                 logger.info("    -> OK: All output Excel folders have file pairs.")
+            stats["unpaired_excel_folders"] = unpaired_excels_count
 
         logger.info("="*70)
         # --- CHECK 3: TOTAL FILE COUNT (Summary) ---
@@ -144,8 +151,11 @@ def run_verification(write_to_file=True,existing_logger=None,const_name=None):
         
         logger.info(f"    - Total Source PDFs found: {pdf_count}")
         logger.info(f"    - Total Generated Excels found: {excel_count}")
+        stats["pdf_count"] = pdf_count
+        stats["excel_count"] = excel_count
         if pdf_count == excel_count:
             logger.info("    -> OK: Total counts are matching.\n")
+            stats["counts_match"] = True
         else:
             logger.warning(f"    -> MISMATCH: Discrepancy of {abs(pdf_count - excel_count)} file(s).\n")
             total_discrepancies += 1
@@ -158,6 +168,7 @@ def run_verification(write_to_file=True,existing_logger=None,const_name=None):
     else:
         logger.warning(f"ATTENTION: Found count discrepancies in {total_discrepancies} constituency/constituencies.")
     logger.info("="*70)
+    return stats
 
 
 # --- This makes the script runnable directly from the command prompt ---
