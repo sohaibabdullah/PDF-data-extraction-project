@@ -25,6 +25,8 @@ import numpy as np
 import io
 import matplotlib.pyplot as plt
 
+load_dotenv()
+
 
 # Assume full_text is already available as a variable
 # full_text = "your full text here"  # Replace with your variable
@@ -147,7 +149,7 @@ def find_header_box_coordinates(pil_image, search_area_ratio=0.4):
 
     return (max(0, top_y), bottom_y)
 
-def extract_gender(pdf_path, vision_client, pagenum):
+def extract_a_page(pdf_path, vision_client, pagenum):
     text_from_page= ""
     try:
         doc = fitz.open(pdf_path)
@@ -189,24 +191,16 @@ def extract_gender(pdf_path, vision_client, pagenum):
             if response and response.text_annotations:
                 text_from_page = response.text_annotations[0].description
                 #print(f"Text for gender extraction:\n {text_from_page}")
-                if re.search(r'মহিলা', text_from_page):
-                    gender_from_page = "মহিলা"
-                    doc.close()
-                    return gender_from_page
-                elif re.search(r'পুরুষ', text_from_page):
-                    gender_from_page = "পুরুষ"
-                    doc.close()
-                    return gender_from_page
-                elif re.search(r'হিজড়া|হিজরা', text_from_page):
-                    gender_from_page = "হিজড়া"
-                    doc.close()
-                    return gender_from_page
-
+                doc.close()
+                return text_from_page
         else:
             errors.append(f"PDF has fewer than {pagenum} pages.")
-        doc.close()
+            doc.close()
+            return ""
+        
     except Exception as e:
         errors.append(f"Error during page {pagenum} processing: {e}")
+        doc.close()
         return ""
 
 
@@ -232,10 +226,16 @@ def extract_metadata_robustly(pdf_path, vision_client, pagenum):
         gender_from_name = "হিজড়া"
     
     if gender_from_name == "Not Found":
-        logging.info("Gender not found from filename, looking for gender from pages")
-        gender_from_page = extract_gender(pdf_path, vision_client, pagenum)
+        logging.info("  [ERROR]Gender not found from filename, looking for gender from pages")
+        text_from_page = extract_a_page(pdf_path, vision_client, pagenum)
+        if re.search(r'মহিলা', text_from_page):
+            gender_from_page = "মহিলা" 
+        elif re.search(r'পুরুষ', text_from_page):
+            gender_from_page = "পুরুষ"
+        elif re.search(r'হিজড়া|হিজরা', text_from_page):
+            gender_from_page = "হিজড়া"
         gender_from_name = gender_from_page
-        logging.info(f"Gender found from page:{gender_from_page}")
+        logging.info(f"  [Resolved?]Gender found from page:{gender_from_page}")
     
     match = re.search(r'^(\d+)_', pdf_file_name)
     voter_area_number_from_name = match.group(1)[-4:] if match else ""
