@@ -6,6 +6,7 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
+import zipfile
 
 load_dotenv()
 
@@ -38,7 +39,8 @@ def get_services():
     
     return drive_service, sheet_client
 
-# --- HELPER FUNCTIONS ---
+# --- previous function with shutil ---
+'''
 def zip_folder(folder_path):
     """Zips the folder and returns the path to the zip file."""
     try:
@@ -48,6 +50,36 @@ def zip_folder(folder_path):
     except Exception as e:
         print(f"   [!] Error zipping {folder_path}: {e}")
         return None
+'''
+def zip_folder(folder_path):
+    """
+    Zips the folder using the zipfile module for maximum Windows compatibility.
+    """
+    # Define the output zip file path
+    zip_output_path = f"{folder_path}.zip"
+    
+    try:
+        # ZIP_DEFLATED is the standard compression Windows loves
+        with zipfile.ZipFile(zip_output_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            
+            # Walk through the directory
+            for root, dirs, files in os.walk(folder_path):
+                for file in files:
+                    full_path = os.path.join(root, file)
+                    
+                    # Create a clean relative path for inside the zip
+                    # This ensures the zip doesn't contain full drive paths
+                    relative_path = os.path.relpath(full_path, folder_path)
+                    
+                    zipf.write(full_path, relative_path)
+                    
+        print(f"   -> Zipped successfully: {os.path.basename(zip_output_path)}")
+        return zip_output_path
+
+    except Exception as e:
+        print(f"   [!] Error zipping {folder_path}: {e}")
+        return None
+
 
 def create_drive_subfolder(service, folder_name, parent_id):
     """Creates a subfolder in Drive and returns its ID."""

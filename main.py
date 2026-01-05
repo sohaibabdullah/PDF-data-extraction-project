@@ -1405,7 +1405,7 @@ if __name__ == "__main__":
     main()
 
    
-    print("\nPipeline completed. Now running verification for all constituencies...")
+    print("\nPipeline completed. Now running verification and writing log for constituencies...")
     run_verification()
 
 

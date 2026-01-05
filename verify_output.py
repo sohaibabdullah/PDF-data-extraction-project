@@ -56,7 +56,7 @@ def run_verification(write_to_file=True,existing_logger=None,const_name=None):
     logger.info("="*70)
     logger.info("x"*70)
     logger.info("="*70)
-    logger.info("--- INITIATING FINAL VERIFICATION AUDIT ---")
+    logger.info("--- INITIATING VERIFICATION AUDIT ---")
     logger.info(f"Scanning PDF Source: {pdf_root_dir}")
     logger.info(f"Scanning Excel Output: {excel_root_dir}")
     logger.info("="*70)
@@ -164,7 +164,7 @@ def run_verification(write_to_file=True,existing_logger=None,const_name=None):
     logger.info("="*70)
     logger.info("--- VERIFICATION AUDIT SUMMARY ---")
     if total_discrepancies == 0:
-        logger.info("SUCCESS: All constituencies passed the total file count check.")
+        logger.info("SUCCESS: Passed the total file count check.")
     else:
         logger.warning(f"ATTENTION: Found count discrepancies in {total_discrepancies} constituency/constituencies.")
     logger.info("="*70)
