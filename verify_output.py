@@ -76,7 +76,7 @@ def run_verification(write_to_file=True,existing_logger=None,const_name=None,dup
         "pdf_count": 0,
         "excel_count": 0,
         "unpaired_excel_folders": 0,
-        "counts_match": False
+        "counts_match": False,
         "total_duplicate_count": 0
     }
     for const_folder in constituency_folders:
@@ -101,7 +101,7 @@ def run_verification(write_to_file=True,existing_logger=None,const_name=None,dup
                 pdf_dupli_count += 1
                 logger.warning(f"== {pdf_dupli_count} - Filename '{name}' appears {count} times.")
             
-            logger.warning(f"Total duplicate PDFs: {pdf_dupli_count}")
+            logger.warning(f"Duplicate PDFs with same names: {pdf_dupli_count}")
             Total_duplicate_count += pdf_dupli_count
             stats["total_duplicate_count"] = Total_duplicate_count
 

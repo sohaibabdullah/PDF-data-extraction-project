@@ -48,7 +48,7 @@ def read_links(file_path):
         if fid:
             ids.append(fid)
     return ids
-
+'''
 def download_file(service, file_id, output_path):
     """Downloads a file from Drive by ID."""
     try:
@@ -76,7 +76,33 @@ def download_file(service, file_id, output_path):
     except Exception as e:
         print(f"   [!] Error: {e}")
         return False
-
+'''
+def download_file(service, file_id, output_path):
+    """Downloads a file and RETURNS THE REAL FILENAME from Drive."""
+    try:
+        # Get metadata to find the Real Name (e.g. নোয়াখালী-৪.zip)
+        file_meta = service.files().get(fileId=file_id).execute()
+        real_file_name = file_meta.get('name', f'downloaded_{file_id}.zip')
+        
+        print(f"   -> Downloading: {real_file_name} ...")
+        
+        request = service.files().get_media(fileId=file_id)
+        fh = io.FileIO(output_path, 'wb')
+        downloader = MediaIoBaseDownload(fh, request)
+        
+        done = False
+        while done is False:
+            status, done = downloader.next_chunk()
+            
+        print("   -> Download Complete.")
+        return True, real_file_name # Return the name found on Drive
+    except HttpError as e:
+        print(f"   [!] HTTP Error downloading {file_id}: {e}")
+        return False, None
+    except Exception as e:
+        print(f"   [!] Error: {e}")
+        return False, None
+    
 def clean_folder_names(root_folder):
     """
     Scans folders inside root_folder.
@@ -122,29 +148,37 @@ def main_downloader():
     for index, fid in enumerate(file_ids):
         print(f"\nProcessing Link {index + 1}/{len(file_ids)}...")
         
-        # Temp name for the downloaded zip
-        zip_output_path = os.path.join(DOWNLOAD_FOLDER, f"temp_{index}.zip")
+        # Temp path for the raw zip
+        temp_zip_path = os.path.join(DOWNLOAD_FOLDER, f"temp_{index}.zip")
         
-        # Download
-        if download_file(service, fid, zip_output_path):
-            # Unzip
+        # 1. DOWNLOAD
+        success, real_filename = download_file(service, fid, temp_zip_path)
+        
+        if success and real_filename:
+            # 2. CREATE FOLDER FROM ZIP NAME
+            # Remove .zip extension to get "নোয়াখালী-৪"
+            folder_name_base = os.path.splitext(real_filename)[0]
+            
+            # Create path: pdf-voterlist/নোয়াখালী-৪
+            target_folder = os.path.join(DOWNLOAD_FOLDER, folder_name_base)
+            
+            if not os.path.exists(target_folder):
+                os.makedirs(target_folder)
+
+            # 3. UNZIP DIRECTLY INTO THAT FOLDER
             try:
-                print("   -> Unzipping...")
-                with zipfile.ZipFile(zip_output_path, 'r') as zip_ref:
-                    zip_ref.extractall(DOWNLOAD_FOLDER)
-                print("   -> Unzipped.")
+                print(f"   -> Unzipping into: {folder_name_base}")
+                with zipfile.ZipFile(temp_zip_path, 'r') as zip_ref:
+                    zip_ref.extractall(target_folder)
                 
-                # Close the file handle logic implicitly handled, safe to remove now
             except zipfile.BadZipFile:
-                print("   [!] Error: The downloaded file is not a valid zip.")
+                print("   [!] Error: Invalid zip file.")
             except Exception as e:
                 print(f"   [!] Unzip Error: {e}")
             
-            # Remove the zip file to save space
-            try:
-                os.remove(zip_output_path)
-            except:
-                pass
+            # Cleanup Zip
+            try: os.remove(temp_zip_path)
+            except: pass
         else:
             print("   [!] Skipping unzip due to download failure.")
 

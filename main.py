@@ -1102,7 +1102,7 @@ def main():
         # Populate the dictionary with all PDF names as keys and empty values.
         for pdf_path in all_pdfs_in_const:
             pdf_to_excel_map[pdf_path.name] = ""
-        logging.info(f"Initialized map with {len(pdf_to_excel_map)} PDFs for '{constituency_name}'.")
+        #logging.info(f"Initialized map with {len(pdf_to_excel_map)} PDFs for '{constituency_name}'.")
 
         all_pdfs_to_process = []
         for job in all_jobs:
