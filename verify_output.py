@@ -75,6 +75,7 @@ def run_verification(write_to_file=True,existing_logger=None,const_name=None,dup
     stats = {
         "pdf_count": 0,
         "excel_count": 0,
+        "unpaired_pdf_folders": 0,
         "unpaired_excel_folders": 0,
         "counts_match": False,
         "total_duplicate_count": 0
@@ -126,7 +127,7 @@ def run_verification(write_to_file=True,existing_logger=None,const_name=None,dup
         if not unpaired_pdfs_found:
             logger.info("    -> OK: All source PDF folders have file pairs.")
         logger.info("-"*60)
-        
+        stats["unpaired_pdf_folders"] = unpaired_pdfs_count
         # Check Excel pairs
         excel_last_folders = find_last_subfolders(output_const_folder)
         unpaired_excels_found = False

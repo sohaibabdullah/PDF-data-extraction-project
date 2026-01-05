@@ -1365,9 +1365,9 @@ def main():
                 log_message = f"{verify_stats['pdf_count']}/{verify_stats['excel_count']} Excels generated - {verify_stats['total_duplicate_count']} duplicates found"
         else:
             if verify_stats["total_duplicate_count"] == 0:
-                log_message = f"{verify_stats['pdf_count']}/{verify_stats['excel_count']} Excels generated, unpaired excel folders: {verify_stats['unpaired_excel_folders']}"
+                log_message = f"{verify_stats['pdf_count']}/{verify_stats['excel_count']} Excels generated, unpaired folders - PDF:{verify_stats['unpaired_pdf_folders']}, Excel: {verify_stats['unpaired_excel_folders']}"
             else:
-                log_message = f"{verify_stats['pdf_count']}/{verify_stats['excel_count']} Excels generated, {verify_stats['total_duplicate_count']} duplicates found, unpaired excel folders: {verify_stats['unpaired_excel_folders']}"
+                log_message = f"{verify_stats['pdf_count']}/{verify_stats['excel_count']} Excels generated, {verify_stats['total_duplicate_count']} duplicates found, unpaired folders - PDF:{verify_stats['unpaired_pdf_folders']}, Excel: {verify_stats['unpaired_excel_folders']}"
            
         
         logging.info("="*60)
