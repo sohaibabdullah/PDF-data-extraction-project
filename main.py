@@ -1368,9 +1368,19 @@ def main():
 # --- This makes the script runnable ---
 if __name__ == "__main__":
     freeze_support()
-    main()
+    print("===========================================")
+    print("   PHASE 1: DOWNLOADING SOURCE FILES       ")
+    print("===========================================")
+    downloader.main_downloader()
+    print("\n")
     
-    print("\nProcessing complete. Now running final verification audit...")
+    print("===========================================")
+    print("   PHASE 2: PROCESSING & UPLOADING         ")
+    print("===========================================")
+    main()
+
+   
+    print("\nPipeline completed. Now running verification for all constituencies...")
     run_verification()
 
 
