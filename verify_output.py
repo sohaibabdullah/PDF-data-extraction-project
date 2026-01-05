@@ -17,10 +17,11 @@ def find_last_subfolders(root_path):
             last_folders.append(Path(dirpath))
     return last_folders
 
-def run_verification(write_to_file=True,existing_logger=None,const_name=None):
+def run_verification(write_to_file=True,existing_logger=None,const_name=None,duplicate_count=0):
     """
     Performs a detailed verification audit, including duplicate and pairing checks.
     """
+    Total_duplicate_count = duplicate_count
     if existing_logger:
       logger = existing_logger
     else:
@@ -76,6 +77,7 @@ def run_verification(write_to_file=True,existing_logger=None,const_name=None):
         "excel_count": 0,
         "unpaired_excel_folders": 0,
         "counts_match": False
+        "total_duplicate_count": 0
     }
     for const_folder in constituency_folders:
         constituency_name = const_folder.name
@@ -100,6 +102,8 @@ def run_verification(write_to_file=True,existing_logger=None,const_name=None):
                 logger.warning(f"== {pdf_dupli_count} - Filename '{name}' appears {count} times.")
             
             logger.warning(f"Total duplicate PDFs: {pdf_dupli_count}")
+            Total_duplicate_count += pdf_dupli_count
+            stats["total_duplicate_count"] = Total_duplicate_count
 
         logger.info("="*70)
 
@@ -157,8 +161,14 @@ def run_verification(write_to_file=True,existing_logger=None,const_name=None):
             logger.info("    -> OK: Total counts are matching.\n")
             stats["counts_match"] = True
         else:
-            logger.warning(f"    -> MISMATCH: Discrepancy of {abs(pdf_count - excel_count)} file(s).\n")
-            total_discrepancies += 1
+            if Total_duplicate_count >0:
+                logger.warning(f"    -> MISMATCH: Discrepancy of {abs(pdf_count - excel_count)} file(s). Note: There are {Total_duplicate_count} duplicate PDF filenames which may affect this count.\n")
+                if abs(pdf_count - excel_count) == Total_duplicate_count:
+                    logger.warning("       The count discrepancy matches the number of duplicate PDF filenames.")
+                    stats["counts_match"] = True
+            else:
+                logger.warning(f"    -> MISMATCH: Discrepancy of {abs(pdf_count - excel_count)} file(s).\n")
+                total_discrepancies += 1
 
     # --- FINAL SUMMARY ---
     logger.info("="*70)

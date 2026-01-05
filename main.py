@@ -1299,6 +1299,7 @@ def main():
         file_counts = Counter(generated_files)
         duplicates = {filename: count for filename, count in file_counts.items() if count > 1}
 
+        duplicate_count = 0
         if not duplicates:
             logging.info("✅ Uniqueness Check: No duplicate Excel filenames were generated.")
         else:
@@ -1309,6 +1310,8 @@ def main():
                 source_pdfs = [pdf for pdf, excel in pdf_to_excel_map.items() if excel == filename]
                 logging.warning(f"{c} - File '{filename}' was generated {count} times by PDFs: {source_pdfs}")
             logging.info(f"Total Number of instances of duplicate files with different names: {c}")
+            duplicate_count = c
+
         
         logging.info("-" * 60)
 
@@ -1346,7 +1349,7 @@ def main():
         logging.info("-" * 60)
         
         logger = logging.getLogger()
-        verify_stats = run_verification(write_to_file=True, existing_logger=logger,const_name=const_folder)
+        verify_stats = run_verification(write_to_file=True, existing_logger=logger,const_name=const_folder,duplicate_count=duplicate_count)
         #logging.info(f"--- Finishing Constituency: {constituency_name} ---\n")
 
         counts_ok = verify_stats["counts_match"]
@@ -1356,9 +1359,16 @@ def main():
             metadata_ok = False
         
         if verify_stats['unpaired_excel_folders'] == 0:
-            log_message = f"{verify_stats['pdf_count']}/{verify_stats['excel_count']} Excels generated - No issue found"
+            if verify_stats["total_duplicate_count"] == 0:
+                log_message = f"{verify_stats['pdf_count']}/{verify_stats['excel_count']} Excels generated - No issue found"
+            else:
+                log_message = f"{verify_stats['pdf_count']}/{verify_stats['excel_count']} Excels generated - {verify_stats['total_duplicate_count']} duplicates found"
         else:
-            log_message = f"{verify_stats['pdf_count']}/{verify_stats['excel_count']} Excels generated, unpaired excel folders: {verify_stats['unpaired_excel_folders']}"
+            if verify_stats["total_duplicate_count"] == 0:
+                log_message = f"{verify_stats['pdf_count']}/{verify_stats['excel_count']} Excels generated, unpaired excel folders: {verify_stats['unpaired_excel_folders']}"
+            else:
+                log_message = f"{verify_stats['pdf_count']}/{verify_stats['excel_count']} Excels generated, {verify_stats['total_duplicate_count']} duplicates found, unpaired excel folders: {verify_stats['unpaired_excel_folders']}"
+           
         
         logging.info("="*60)
         logging.info(f"--- UPLOAD DECISION FOR {constituency_name} ---")
@@ -1405,7 +1415,7 @@ if __name__ == "__main__":
     main()
 
    
-    print("\nPipeline completed. Now running verification and writing log for constituencies...")
-    run_verification()
+    #print("\nPipeline completed. Now running verification and writing log for constituencies...")
+    #run_verification()
 
 
