@@ -134,6 +134,10 @@ def main_downloader():
     print("--- STEP 1: DOWNLOADER STARTED ---")
     
     # 1. Setup
+    if os.path.exists(DOWNLOAD_FOLDER):
+        print(f"   [Cleanup] Removing existing '{DOWNLOAD_FOLDER}' folder...")
+        shutil.rmtree(DOWNLOAD_FOLDER)
+        
     if not os.path.exists(DOWNLOAD_FOLDER):
         os.makedirs(DOWNLOAD_FOLDER)
     
