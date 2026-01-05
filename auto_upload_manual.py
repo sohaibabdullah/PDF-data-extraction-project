@@ -106,12 +106,12 @@ def update_sheet_row(client, sheet_id, folder_name, link, log_text, link_txt, li
     """
     Updates Sheet:
     1. Col C: Blue Background (#4285f4)
-    2. Col I: Status 'Done ' (Green Chip)
-    3. Col J: Date & Time (Dhaka UTC+6)
-    4. Col K: Drive Link (Main Zip)
-    5. Col P: External Log Text
-    6. Col Q: Log TXT Link
-    7. Col R: Log XLSX Link
+    2. Col J: Status 'Done ' (Green Chip)
+    3. Col K: Date & Time (Dhaka UTC+6)
+    4. Col L: Drive Link (Main Zip)
+    5. Col Q: External Log Text
+    6. Col R: Log TXT Link
+    7. Col S: Log XLSX Link
     """
     try:
         sh = client.open_by_key(sheet_id)
@@ -128,29 +128,29 @@ def update_sheet_row(client, sheet_id, folder_name, link, log_text, link_txt, li
                 "backgroundColor": {"red": 0.259, "green": 0.522, "blue": 0.957}
             })
 
-            # --- 2. UPDATE STATUS (Col I) ---
+            # --- 2. UPDATE STATUS (Col J) ---
             ws.update(
-                range_name=f"I{row}", 
+                range_name=f"J{row}", 
                 values=[["Done "]], 
                 value_input_option="USER_ENTERED"
             )
 
-            # --- 3. UPDATE DATE/TIME (Col J) ---
+            # --- 3. UPDATE DATE/TIME (Col K) ---
             dhaka_time = datetime.now(timezone.utc) + timedelta(hours=6)
             time_str = f"{dhaka_time.day} {dhaka_time.strftime('%b %y')}, {dhaka_time.strftime('%I').lstrip('0')}:{dhaka_time.strftime('%M %p')}"
-            ws.update_cell(row, 10, time_str)
+            ws.update_cell(row, 11, time_str)
 
-            # --- 4. UPDATE MAIN LINK (Col K) ---
-            ws.update_cell(row, 11, link)
+            # --- 4. UPDATE MAIN LINK (Col L) ---
+            ws.update_cell(row, 12, link)
 
-            # --- 5. UPDATE LOG TEXT (Col P) ---
-            ws.update_cell(row, 16, log_text)
+            # --- 5. UPDATE LOG TEXT (Col Q) ---
+            ws.update_cell(row, 17, log_text)
 
-            # --- 6. UPDATE LOG TXT LINK (Col Q -> Index 17) ---
-            ws.update_cell(row, 17, link_txt)
+            # --- 6. UPDATE LOG TXT LINK (Col R -> Index 18) ---
+            ws.update_cell(row, 18, link_txt)
 
-            # --- 7. UPDATE LOG XLSX LINK (Col R -> Index 18) ---
-            ws.update_cell(row, 18, link_xlsx)
+            # --- 7. UPDATE LOG XLSX LINK (Col S -> Index 19) ---
+            ws.update_cell(row, 19, link_xlsx)
             
             return True, row
         else:

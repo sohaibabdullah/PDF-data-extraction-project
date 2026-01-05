@@ -91,7 +91,7 @@ def set_public_permission(service, file_id):
         return None
 
 def update_sheet_row(client, sheet_id, folder_name, link, log_text, link_txt, link_xlsx):
-    """Updates Sheet Columns C, I, J, K, P, Q, R."""
+    """Updates Sheet Columns C, J, K, L, P, Q, R, S."""
     try:
         sh = client.open_by_key(sheet_id)
         ws = sh.sheet1
@@ -107,29 +107,29 @@ def update_sheet_row(client, sheet_id, folder_name, link, log_text, link_txt, li
                 "backgroundColor": {"red": 0.259, "green": 0.522, "blue": 0.957}
             })
 
-            # 2. UPDATE STATUS (Col I) - Force 'Done ' with space
+            # 2. UPDATE STATUS (Col J) - Force 'Done ' with space
             ws.update(
-                range_name=f"I{row}", 
+                range_name=f"J{row}", 
                 values=[["Done "]], 
                 value_input_option="USER_ENTERED"
             )
 
-            # 3. UPDATE DATE/TIME (Col J) - Dhaka UTC+6
+            # 3. UPDATE DATE/TIME (Col K) - Dhaka UTC+6
             dhaka_time = datetime.now(timezone.utc) + timedelta(hours=6)
             time_str = f"{dhaka_time.day} {dhaka_time.strftime('%b %y')}, {dhaka_time.strftime('%I').lstrip('0')}:{dhaka_time.strftime('%M %p')}"
-            ws.update_cell(row, 10, time_str)
+            ws.update_cell(row, 11, time_str)
 
-            # 4. UPDATE MAIN LINK (Col K)
-            ws.update_cell(row, 11, link)
+            # 4. UPDATE MAIN LINK (Col L)
+            ws.update_cell(row, 12, link)
 
-            # 5. UPDATE LOG TEXT (Col P)
-            ws.update_cell(row, 16, log_text)
+            # 5. UPDATE LOG TEXT (Col Q)
+            ws.update_cell(row, 17, log_text)
 
-            # 6. UPDATE LOG TXT LINK (Col Q)
-            ws.update_cell(row, 17, link_txt)
+            # 6. UPDATE LOG TXT LINK (Col R)
+            ws.update_cell(row, 18, link_txt)
 
-            # 7. UPDATE LOG XLSX LINK (Col R)
-            ws.update_cell(row, 18, link_xlsx)
+            # 7. UPDATE LOG XLSX LINK (Col S)
+            ws.update_cell(row, 19, link_xlsx)
             
             return True, row
         else:
