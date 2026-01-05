@@ -1,0 +1,22 @@
+# --- Secrets & Credentials ---
+*.json
+.env
+token.pickle
+
+# --- Input Data ---
+pdflinks.txt
+
+# --- Virtual Environment & Cache ---
+venv/
+__pycache__/
+*.pyc
+
+# --- Output Folders (You likely don't want to upload thousands of PDFs/Excels) ---
+pdf-voterlist/
+Formatted_Excel_Output/
+Log_Output/
+*_output/
+
+# --- OS generated files ---
+.DS_Store
+Thumbs.db
