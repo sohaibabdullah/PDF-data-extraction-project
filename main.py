@@ -31,7 +31,28 @@ import error_upload_module
 
 load_dotenv()
 
+# --- GLOBAL REGION MAP ---
+REGION_MAPPING = {}
 
+def load_region_mapping():
+    """Loads the CSV map into the global dictionary."""
+    global REGION_MAPPING
+    csv_path = "region_map.csv"
+    
+    if os.path.exists(csv_path):
+        try:
+            df = pd.read_csv(csv_path)
+            # Create a dictionary: Key = Constituency, Value = Region
+            # cleanup string just in case
+            df['Constituency'] = df['Constituency'].astype(str).str.strip()
+            df['Region'] = df['Region'].astype(str).str.strip()
+            
+            REGION_MAPPING = pd.Series(df.Region.values, index=df.Constituency).to_dict()
+            print(f"Loaded Region Map with {len(REGION_MAPPING)} entries.")
+        except Exception as e:
+            print(f"Error loading region_map.csv: {e}")
+    else:
+        print("Warning: region_map.csv not found. Region column will be empty.")
 # Assume full_text is already available as a variable
 # full_text = "your full text here"  # Replace with your variable
 
@@ -820,9 +841,11 @@ def write_to_excel(metadata, all_records, constituency_name, base_output_dir, pd
 
         # --- 4. Prepare data for Excel writing ---
         # Create the header rows as a list of lists
+        mapped_region = REGION_MAPPING.get(constituency_name.strip(), metadata.get("অঞ্চল", ""))
+
         header_rows = [
             ["আসন নাম", constituency_name],
-            ["অঞ্চল", metadata.get("অঞ্চল", "")],
+            ["অঞ্চল", mapped_region],
             ["জেলা", district],
             ["উপজেলা/থানা", upazila],
             ["সিটি কর্পোরেশন/পৌরসভা", metadata.get("সিটি কর্পোরেশন/ পৌরসভা", "")],
@@ -1374,6 +1397,8 @@ if __name__ == "__main__":
     downloader.main_downloader()
     print("\n")
     
+    load_region_mapping()
+
     print("===========================================")
     print("   PHASE 2: PROCESSING & UPLOADING         ")
     print("===========================================")
