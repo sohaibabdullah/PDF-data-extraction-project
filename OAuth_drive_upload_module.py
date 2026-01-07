@@ -8,6 +8,8 @@ from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
 import zipfile
 from google_auth_oauthlib.flow import InstalledAppFlow
+import logging
+from google.auth.transport.requests import Request
 
 
 load_dotenv()
@@ -188,19 +190,20 @@ def update_sheet_row(client, sheet_id, folder_name, link, log_text, link_txt, li
         return False, None
 
 # --- PUBLIC FUNCTION TO CALL FROM MAIN PROJECT ---
-def process_and_upload_folder(target_folder_name, log_message):
+def process_and_upload_folder(target_folder_name, log_message, existing_logger=None):
     """
     Main entry point to process a single folder.
     Args:
         target_folder_name (str): The name of the folder inside Formatted_Excel_Output (e.g., "Dhaka-1")
         log_message (str): The log text to write in Column P.
     """
-    print(f"\n--- STARTING UPLOAD MODULE FOR: {target_folder_name} ---")
+    logger = existing_logger
+    logging.info(f"\n--- STARTING UPLOAD MODULE FOR: {target_folder_name} ---")
     
     # 1. Validate paths
     full_folder_path = os.path.join(LOCAL_SOURCE_FOLDER, target_folder_name)
     if not os.path.exists(full_folder_path):
-        print(f"Error: Folder '{full_folder_path}' does not exist.")
+        logging.info(f"Error: Folder '{full_folder_path}' does not exist.")
         return False
 
     # 2. Setup Services
@@ -213,22 +216,22 @@ def process_and_upload_folder(target_folder_name, log_message):
     # A. Zip
     zip_path = zip_folder(full_folder_path)
     if not zip_path: return False
-    print("   -> Zipped.")
+    logging.info("   -> Zipped.")
 
     # B. Drive: Create Folder
     new_drive_folder_id = create_drive_subfolder(drive_service, target_folder_name, DRIVE_DESTINATION_FOLDER_ID)
     if not new_drive_folder_id: return False
-    print("   -> Drive folder created.")
+    logging.info("   -> Drive folder created.")
 
     # C. Drive: Upload Zip
     uploaded_id = upload_file_to_drive(drive_service, zip_path, new_drive_folder_id)
     if not uploaded_id: return False
-    print("   -> Zip uploaded.")
+    logging.info("   -> Zip uploaded.")
 
     # D. Drive: Share Main Zip
     share_link = set_public_permission(drive_service, new_drive_folder_id)
     if not share_link: return False
-    print("   -> Permission set & Main Link generated.")
+    logging.info("   -> Permission set & Main Link generated.")
 
     # E. Process Log Files (TXT and XLSX)
     link_txt = ""
@@ -242,21 +245,21 @@ def process_and_upload_folder(target_folder_name, log_message):
 
     # Handle .txt Log
     if os.path.exists(txt_path):
-        print(f"   -> Found Log TXT: {txt_filename}")
+        logging.info(f"   -> Found Log TXT: {txt_filename}")
         txt_id = upload_file_to_drive(drive_service, txt_path, DRIVE_LOGS_FOLDER_ID)
         if txt_id:
             link_txt = set_public_permission(drive_service, txt_id)
     else:
-        print(f"   -> [!] Log TXT not found: {txt_path}")
+        logging.info(f"   -> [!] Log TXT not found: {txt_path}")
 
     # Handle .xlsx Report
     if os.path.exists(xlsx_path):
-        print(f"   -> Found Log XLSX: {xlsx_filename}")
+        logging.info(f"   -> Found Log XLSX: {xlsx_filename}")
         xlsx_id = upload_file_to_drive(drive_service, xlsx_path, DRIVE_LOGS_FOLDER_ID)
         if xlsx_id:
             link_xlsx = set_public_permission(drive_service, xlsx_id)
     else:
-        print(f"   -> [!] Log XLSX not found: {xlsx_path}")
+        logging.info(f"   -> [!] Log XLSX not found: {xlsx_path}")
 
     # F. Sheets: Update
     success, row_num = update_sheet_row(
@@ -270,17 +273,17 @@ def process_and_upload_folder(target_folder_name, log_message):
     )
     
     if success:
-        print(f"   -> Sheet updated at Row {row_num}.")
+        logging.info(f"   -> Sheet updated at Row {row_num}.")
     else:
-        print(f"   -> WARNING: Could not find '{target_folder_name}' in the Google Sheet (Column C).")
+        logging.info(f"   -> WARNING: Could not find '{target_folder_name}' in the Google Sheet (Column C).")
 
     # Cleanup: Remove the local zip file
     try:
         os.remove(zip_path)
     except:
         pass
-    
-    print(f"--- FINISHED UPLOAD MODULE FOR: {target_folder_name} ---\n")
+
+    logging.info(f"--- FINISHED UPLOAD MODULE FOR: {target_folder_name} ---\n")
     return True
 
 # --- DUMMY TEST BLOCK ---
