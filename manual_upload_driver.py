@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 import sqlite3
 from db import get_conn
+import pandas as pd
 
 
 
@@ -31,7 +32,7 @@ stream_formatter = logging.Formatter('%(message)s')
 stream_handler.setFormatter(stream_formatter)
 logger.addHandler(stream_handler)
 
-# Read the CSV file
+
 conn = get_conn()
 rows = conn.execute("""
     SELECT id, constituency_name, log_message, upload_status
@@ -44,11 +45,7 @@ for row in rows:
     folder_name = row[1]
     log_message = row[2]
     upload_status = row[3]
-
-    if upload_status != 'Not uploaded':
-        logging.info(f"Skipping {folder_name} as it is already processed with status: {upload_status}")
-        continue
-
+    
     logging.info(f"Processing folder: {folder_name} with log message: {log_message}")
     uploaded = OAuth_drive_upload_module.process_and_upload_folder(folder_name, log_message,existing_logger=logger)
     if uploaded:
@@ -60,3 +57,4 @@ for row in rows:
         conn.commit()
         logging.info(f"Successfully uploaded {folder_name}. Updated CSV upload status to: {upload_status}")
 
+        
