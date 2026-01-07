@@ -1405,9 +1405,9 @@ def main():
 if __name__ == "__main__":
     freeze_support()
     print("===========================================")
-    print("   PHASE 1: DOWNLOADING SOURCE FILES       ")
+    #print("   PHASE 1: DOWNLOADING SOURCE FILES       ")
     print("===========================================")
-    downloader.main_downloader()
+    #downloader.main_downloader()
     print("\n")
     
     load_region_mapping()
