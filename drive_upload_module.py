@@ -7,13 +7,16 @@ from googleapiclient.http import MediaFileUpload
 from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
 import zipfile
+from google.oauth2 import service_account
 
 load_dotenv()
 
 # --- CONFIGURATION (KEPT EXACTLY AS REQUESTED) ---
 DRIVE_DESTINATION_FOLDER_ID = os.getenv("DRIVE_DESTINATION_FOLDER_ID")
 GOOGLE_SHEET_ID = os.getenv("GOOGLE_SHEET_ID")
-DRIVE_LOGS_FOLDER_ID = os.getenv("DRIVE_LOGS_FOLDER_ID") 
+DRIVE_LOGS_FOLDER_ID = os.getenv("DRIVE_LOGS_FOLDER_ID")
+SERVICE_ACCOUNT_FILE = os.getenv("SERVICE_ACCOUNT_FILE")
+
 LOCAL_LOGS_FOLDER = "Log_Output" 
 LOCAL_SOURCE_FOLDER = "Formatted_Excel_Output"
 
@@ -24,20 +27,25 @@ SCOPES = [
 ]
 
 def get_services():
-    """Authenticates and returns the Drive service and Sheets client."""
-    creds = None
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-    else:
-        print("Error: 'token.json' not found. Please run the setup script first.")
+    """Authenticates using Service Account from .env"""
+    
+    if not SERVICE_ACCOUNT_FILE or not os.path.exists(SERVICE_ACCOUNT_FILE):
+        logging.error(f"❌ Error: Service Account file not found. Check .env: {SERVICE_ACCOUNT_FILE}")
         return None, None
-    
-    # Build Drive Service
-    drive_service = build('drive', 'v3', credentials=creds)
-    # Build Sheets Client (gspread)
-    sheet_client = gspread.authorize(creds)
-    
-    return drive_service, sheet_client
+
+    try:
+        creds = service_account.Credentials.from_service_account_file(
+            SERVICE_ACCOUNT_FILE, scopes=SCOPES
+        )
+        
+        drive_service = build('drive', 'v3', credentials=creds, cache_discovery=False)
+        sheet_client = gspread.authorize(creds)
+        
+        return drive_service, sheet_client
+    except Exception as e:
+        logging.error(f"Auth Error: {e}")
+        return None, None
+
 
 # --- previous function with shutil ---
 '''

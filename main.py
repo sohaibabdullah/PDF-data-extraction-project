@@ -1357,19 +1357,14 @@ def main():
             metadata_ok = True
         else:
             metadata_ok = False
-        
-        if verify_stats['unpaired_excel_folders'] == 0:
-            if verify_stats["total_duplicate_count"] == 0:
-                log_message = f"{verify_stats['pdf_count']}/{verify_stats['excel_count']} Excels generated - No issue found"
-            else:
-                log_message = f"{verify_stats['pdf_count']}/{verify_stats['excel_count']} Excels generated - {verify_stats['total_duplicate_count']} duplicates found"
-        else:
-            if verify_stats["total_duplicate_count"] == 0:
-                log_message = f"{verify_stats['pdf_count']}/{verify_stats['excel_count']} Excels generated, unpaired folders - PDF:{verify_stats['unpaired_pdf_folders']}, Excel: {verify_stats['unpaired_excel_folders']}"
-            else:
-                log_message = f"{verify_stats['pdf_count']}/{verify_stats['excel_count']} Excels generated, {verify_stats['total_duplicate_count']} duplicates found, unpaired folders - PDF:{verify_stats['unpaired_pdf_folders']}, Excel: {verify_stats['unpaired_excel_folders']}"
-           
-        
+
+
+        log_message = f"{verify_stats['pdf_count']}/{verify_stats['excel_count']} Excels generated, Duplicates: {verify_stats['total_duplicate_count']}, Count Match:{counts_ok}, Metadata OK: {metadata_ok}, unpaired folders - PDF:{verify_stats['unpaired_pdf_folders']}, Excel: {verify_stats['unpaired_excel_folders']}"
+
+        os.makedirs("status", exist_ok=True) 
+        with open("status/logmessage.csv","a",encoding="utf-8-sig") as f:
+            f.write(f"{constituency_name},{log_message}\n")
+
         logging.info("="*60)
         logging.info(f"--- UPLOAD DECISION FOR {constituency_name} ---")
         logging.info(f"Criteria: Counts Match? {counts_ok} | Metadata OK? {metadata_ok}")
@@ -1404,7 +1399,7 @@ if __name__ == "__main__":
     print("===========================================")
     print("   PHASE 1: DOWNLOADING SOURCE FILES       ")
     print("===========================================")
-    downloader.main_downloader()
+    #downloader.main_downloader()
     print("\n")
     
     load_region_mapping()
