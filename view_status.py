@@ -27,7 +27,7 @@ try:
             print(f"[ID {row['id']}] {row['constituency_name']} | {row['log_message']} | {row['upload_status']}")
             last_seen_id = max(last_seen_id, row["id"])
         
-        time.sleep(60)  # Wait for 60 seconds before checking again
+        time.sleep(2)  # Wait for 2 seconds before checking again
 
 except KeyboardInterrupt:
     print("\nStopped listening.")

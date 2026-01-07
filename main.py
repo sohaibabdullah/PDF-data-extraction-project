@@ -1385,7 +1385,7 @@ def main():
         else:
             logging.warning("❌ FAILED. Requires manual Review...")
 
-        #--- UPLOAD BASED ON VERIFICATION RESULTS ---
+        '''#--- UPLOAD BASED ON VERIFICATION RESULTS ---
         if counts_ok and metadata_ok:
             logging.info("✅ PASSED. Uploading to Main Drive...")
             serviceaccount_drive_upload_module.process_and_upload_folder(constituency_name, log_message)
@@ -1394,9 +1394,11 @@ def main():
             logging.warning("❌ FAILED. Uploading for later Error/Review Drive...")
             serviceaccount_drive_upload_module.process_and_upload_folder(constituency_name, log_message)
             #error_upload_module.process_and_upload_error_folder(constituency_name, log_message)
+        '''
         
         logging.info(f"Total time taken: {(total_end_time - total_start_time) / 60:.2f} minutes")
         logging.info(f"Finished Constituency: {constituency_name}-------")
+        
         
 
 
@@ -1415,9 +1417,9 @@ def main():
 if __name__ == "__main__":
     freeze_support()
     print("===========================================")
-    #print("   PHASE 1: DOWNLOADING SOURCE FILES       ")
+    print("   PHASE 1: DOWNLOADING SOURCE FILES       ")
     print("===========================================")
-    #downloader.main_downloader()
+    downloader.main_downloader()
     print("\n")
     
     load_region_mapping()
