@@ -26,7 +26,7 @@ import io
 import matplotlib.pyplot as plt
 
 import downloader
-import drive_upload_module
+import serviceaccount_drive_upload_module
 import error_upload_module
 
 load_dotenv()
@@ -1359,11 +1359,11 @@ def main():
             metadata_ok = False
 
 
-        log_message = f"{verify_stats['pdf_count']}/{verify_stats['excel_count']} Excels generated, Duplicates: {verify_stats['total_duplicate_count']}, Count Match:{counts_ok}, Metadata OK: {metadata_ok}, unpaired folders - PDF:{verify_stats['unpaired_pdf_folders']}, Excel: {verify_stats['unpaired_excel_folders']}"
+        log_message = f"{verify_stats['pdf_count']}/{verify_stats['excel_count']} Excels generated -- Duplicates: {verify_stats['total_duplicate_count']} -- Count Match:{counts_ok} -- Metadata OK: {metadata_ok} -- unpaired folders - PDF:{verify_stats['unpaired_pdf_folders']} Vs Excel: {verify_stats['unpaired_excel_folders']}"
 
         os.makedirs("status", exist_ok=True) 
         with open("status/logmessage.csv","a",encoding="utf-8-sig") as f:
-            f.write(f"{constituency_name},{log_message}\n")
+            f.write(f"{constituency_name},{log_message},'None'\n")
 
         logging.info("="*60)
         logging.info(f"--- UPLOAD DECISION FOR {constituency_name} ---")
@@ -1372,7 +1372,7 @@ def main():
 
         if counts_ok and metadata_ok:
             logging.info("✅ PASSED. Uploading to Main Drive...")
-            drive_upload_module.process_and_upload_folder(constituency_name, log_message)
+            serviceaccount_drive_upload_module.process_and_upload_folder(constituency_name, log_message)
         else:
             logging.warning("❌ FAILED. Uploading to Error/Review Drive...")
             error_upload_module.process_and_upload_error_folder(constituency_name, log_message)
