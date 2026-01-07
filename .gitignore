@@ -16,6 +16,8 @@ pdf-voterlist/
 Formatted_Excel_Output/
 Log_Output/
 *_output/
+OAuth_uopload_logs/
+status/
 
 # --- OS generated files ---
 .DS_Store
