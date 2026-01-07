@@ -29,6 +29,8 @@ import downloader
 import serviceaccount_drive_upload_module
 import error_upload_module
 
+from db import get_conn
+
 load_dotenv()
 
 # --- GLOBAL REGION MAP ---
@@ -1361,9 +1363,17 @@ def main():
 
         log_message = f"{verify_stats['pdf_count']}/{verify_stats['excel_count']} Excels generated -- Duplicates: {verify_stats['total_duplicate_count']} -- Count Match:{counts_ok} -- Metadata OK: {metadata_ok} -- unpaired folders - PDF:{verify_stats['unpaired_pdf_folders']} Vs Excel: {verify_stats['unpaired_excel_folders']}"
 
-        os.makedirs("status", exist_ok=True) 
-        with open("status/logmessage.csv","a",encoding="utf-8-sig") as f:
-            f.write(f"{constituency_name},{log_message},Not uploaded\n")
+        #os.makedirs("status", exist_ok=True) 
+        #with open("status/logmessage.csv","a",encoding="utf-8-sig") as f:
+            #f.write(f"{constituency_name},{log_message},Not uploaded\n")
+
+        conn = get_conn()
+        conn.execute(
+            "INSERT INTO logmessage (constituency_name, log_message) VALUES (?, ?)",
+            (constituency_name, log_message)
+        )
+        conn.commit()
+
 
         logging.info("="*60)
         logging.info(f"--- UPLOAD DECISION FOR {constituency_name} ---")
@@ -1375,7 +1385,7 @@ def main():
         else:
             logging.warning("❌ FAILED. Requires manual Review...")
 
-        '''--- UPLOAD BASED ON VERIFICATION RESULTS ---
+        #--- UPLOAD BASED ON VERIFICATION RESULTS ---
         if counts_ok and metadata_ok:
             logging.info("✅ PASSED. Uploading to Main Drive...")
             serviceaccount_drive_upload_module.process_and_upload_folder(constituency_name, log_message)
@@ -1384,7 +1394,7 @@ def main():
             logging.warning("❌ FAILED. Uploading for later Error/Review Drive...")
             serviceaccount_drive_upload_module.process_and_upload_folder(constituency_name, log_message)
             #error_upload_module.process_and_upload_error_folder(constituency_name, log_message)
-        '''
+        
         logging.info(f"Total time taken: {(total_end_time - total_start_time) / 60:.2f} minutes")
         logging.info(f"Finished Constituency: {constituency_name}-------")
         

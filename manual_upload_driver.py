@@ -1,10 +1,10 @@
 # Import the new module
 import OAuth_drive_upload_module
-import pandas as pd
 import logging
 import sys
 from pathlib import Path
-
+import sqlite3
+from db import get_conn
 
 
 
@@ -32,17 +32,19 @@ stream_handler.setFormatter(stream_formatter)
 logger.addHandler(stream_handler)
 
 # Read the CSV file
-df = pd.read_csv(
-    "status/logmessage.csv",
-    header=None,
-    names=["Constituency_name", "Log", "upload_status"]
-)
+conn = get_conn()
+rows = conn.execute("""
+    SELECT id, constituency_name, log_message, upload_status
+    FROM logmessage
+    WHERE upload_status = 'Not uploaded'
+""").fetchall()
 
-for _, row in df.iterrows():
-    folder_name = row["Constituency_name"]
-    log_message = row["Log"]
-    upload_status = row["upload_status"]
-    
+
+for row in rows:
+    folder_name = row[1]
+    log_message = row[2]
+    upload_status = row[3]
+
     if upload_status != 'Not uploaded':
         logging.info(f"Skipping {folder_name} as it is already processed with status: {upload_status}")
         continue
@@ -51,7 +53,10 @@ for _, row in df.iterrows():
     uploaded = OAuth_drive_upload_module.process_and_upload_folder(folder_name, log_message,existing_logger=logger)
     if uploaded:
         upload_status = 'Uploaded'
-        df.loc[df["Constituency_name"] == folder_name, "upload_status"] = upload_status
-        df.to_csv("status/logmessage.csv", index=False, header=False)
+        conn.execute(
+            "UPDATE logmessage SET upload_status = ? WHERE constituency_name = ?",
+            (upload_status, row[1])
+        )
+        conn.commit()
         logging.info(f"Successfully uploaded {folder_name}. Updated CSV upload status to: {upload_status}")
 
