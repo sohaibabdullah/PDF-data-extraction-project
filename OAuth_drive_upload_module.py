@@ -197,6 +197,7 @@ def process_and_upload_folder(target_folder_name, log_message, existing_logger=N
         target_folder_name (str): The name of the folder inside Formatted_Excel_Output (e.g., "Dhaka-1")
         log_message (str): The log text to write in Column P.
     """
+    upload_status = True
     logger = existing_logger
     logging.info(f"\n--- STARTING UPLOAD MODULE FOR: {target_folder_name} ---")
     
@@ -274,8 +275,10 @@ def process_and_upload_folder(target_folder_name, log_message, existing_logger=N
     
     if success:
         logging.info(f"   -> Sheet updated at Row {row_num}.")
+        upload_status = True
     else:
         logging.info(f"   -> WARNING: Could not find '{target_folder_name}' in the Google Sheet (Column C).")
+        upload_status = False
 
     # Cleanup: Remove the local zip file
     try:
@@ -284,7 +287,7 @@ def process_and_upload_folder(target_folder_name, log_message, existing_logger=N
         pass
 
     logging.info(f"--- FINISHED UPLOAD MODULE FOR: {target_folder_name} ---\n")
-    return True
+    return upload_status
 
 # --- DUMMY TEST BLOCK ---
 # This allows you to test this file individually if needed

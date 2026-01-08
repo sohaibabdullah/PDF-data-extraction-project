@@ -101,5 +101,5 @@ if __name__ == "__main__":
         process_pending_uploads()
         
         # Sleep for 30 minutes (30 * 60 seconds = 1800)
-        logging.info("Sleeping for 30 minutes...")
-        time.sleep(1800)
+        logging.info("Sleeping for 10 minutes...")
+        time.sleep(600)
